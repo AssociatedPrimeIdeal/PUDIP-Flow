@@ -126,6 +126,25 @@ def _plot(history, snapshots=None, fs: int = 12) -> None:
             alpha=0.6,
             label=f"Best {nrmse_arr[best_idx-1]:.4f} @ {best_idx}",
         )
+
+        last_idx = int(len(nrmse_arr))
+        if last_idx != best_idx:
+            ax1.axvline(
+                last_idx,
+                color="tab:green",
+                linestyle="--",
+                alpha=0.6,
+                label=f"Last {nrmse_arr[last_idx-1]:.4f} @ {last_idx}",
+            )
+        else:
+            ax1.plot(
+                [],
+                [],
+                color="tab:green",
+                linestyle="--",
+                alpha=0.6,
+                label=f"Last {nrmse_arr[last_idx-1]:.4f} @ {last_idx}",
+            )
         ax1.set(xlabel="Epoch", ylabel="NRMSE", title="NRMSE vs. Epoch")
         ax1.grid(True, alpha=0.3)
         ax1.legend()
