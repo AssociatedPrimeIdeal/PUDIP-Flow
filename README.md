@@ -1,2 +1,14 @@
-1. download the testdata at https://drive.google.com/file/d/1hor9kU9INUdgSCXTS02tTMCwETN7Q6cl/view?usp=sharing
-2. run test.ipynb
+# PUDIP-Flow
+
+PUDIP-Flow — Phase Unwrapping via Deep Image Prior for 4D Flow MRI.
+
+## Installation
+
+```bash
+pip install pudipflow
+```
+
+## Reproducible Demo
+A step-by-step example is provided in `test.ipynb`.
+
+The file `./TestData.h5` is a test dataset extracted from the source of FlowVN : https://codeocean.com/capsule/0115983/tree/v1
