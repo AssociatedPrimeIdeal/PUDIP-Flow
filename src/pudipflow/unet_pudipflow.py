@@ -1,8 +1,51 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+class Conv2Plus1D(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=(3, 3, 3), 
+                 padding=(1, 1, 1), mid_channels=None):
+        super().__init__()
+        if isinstance(kernel_size, int):
+            kernel_size = (kernel_size, kernel_size, kernel_size)
+        if isinstance(padding, int):
+            padding = (padding, padding, padding)
+        if mid_channels is None:
+            mid_channels = int((in_channels * out_channels * kernel_size[0] * kernel_size[1] * kernel_size[2]) / 
+                             (in_channels * kernel_size[1] * kernel_size[2] + out_channels * kernel_size[0]))
+        self.spatial_conv = nn.Conv3d(
+            in_channels, mid_channels, 
+            kernel_size=(1, kernel_size[1], kernel_size[2]),
+            padding=(0, padding[1], padding[2])
+        )
+        self.temporal_conv = nn.Conv3d(
+            mid_channels, out_channels,
+            kernel_size=(kernel_size[0], 1, 1),
+            padding=(padding[0], 0, 0)
+        )
+        self.bn1 = nn.InstanceNorm3d(mid_channels)
+        self.bn2 = nn.InstanceNorm3d(out_channels)
+        self.relu = nn.PReLU()
+        
+    def forward(self, x):
+        x = self.spatial_conv(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.temporal_conv(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        return x
 
+class DepthwiseSeparableConv3d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, padding=1):
+        super().__init__()
+        self.depthwise = nn.Conv3d(
+            in_channels, in_channels, kernel_size=kernel_size,
+            padding=padding, groups=in_channels
+        )
+        self.pointwise = nn.Conv3d(in_channels, out_channels, kernel_size=1)
 
+    def forward(self, x):
+        return self.pointwise(self.depthwise(x))
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
@@ -10,10 +53,10 @@ class DoubleConv(nn.Module):
             mid_channels = out_channels
 
         self.double_conv = nn.Sequential(
-            nn.Conv3d(in_channels, mid_channels, kernel_size=3, padding=1),
+            DepthwiseSeparableConv3d(in_channels, mid_channels, kernel_size=3, padding=1),
             nn.InstanceNorm3d(mid_channels),
             nn.PReLU(),
-            nn.Conv3d(mid_channels, out_channels, kernel_size=3, padding=1),
+            DepthwiseSeparableConv3d(mid_channels, out_channels, kernel_size=3, padding=1),
             nn.InstanceNorm3d(out_channels),
             nn.PReLU(),
         )
