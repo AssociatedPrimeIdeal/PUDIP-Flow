@@ -5,7 +5,7 @@ PUDIP-Flow — Phase Unwrapping via Deep Image Prior for 4D Flow MRI.
 ## Installation
 
 ```bash
-pip install pudipflow==0.1.3
+pip install pudipflow
 ```
 
 ## Reproducible Demo
